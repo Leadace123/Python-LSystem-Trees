@@ -1,63 +1,110 @@
-import tkinter as tk
+from tkinter import *
 import turtle
 import random
 
-LARGE_FONT = ('Verdana', 12)
+# Creates Root Window
+root = Tk()
+root.title('drawing GUI')
+root.state('zoomed')
+root.config(bg='grey')
+w = root.winfo_screenwidth()
+h = root.winfo_screenheight()
 
 
-class Application(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        container = tk.Frame(self)
-        container.pack(side='top', fill='both', expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
-        self.frames = {}
-        frame = TreeGenerator(container, self)
-        self.frames[TreeGenerator] = frame
-        frame.grid(row=0, column=0, sticky='nsew')
-        self.show_frame(TreeGenerator)
-
-    def show_frame(self, cont):
-        frame = self.frames[cont]
-        frame.tkraise()
+is_drawing = 0
 
 
-class TreeGenerator(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        w = self.winfo_screenwidth()
-        h = self.winfo_screenheight()
-        # Inputs
-        fields = ['Iterations: ', 'Seg Length Low: ', 'Seg Length High: ', 'Turn Angle Low: ', 'Turn Angle High: ']
-        entry_defaults = [3, 8, 16, 10, 22]
-        entries = []
-        for i in range(len(fields)):
-            lab = tk.Label(self, text=fields[i])
-            lab.grid(row=i, column=0)
-            en = tk.Entry(self, width=6)
-            en.grid(row=i, column=1, padx=10)
-            en.insert(0, entry_defaults[i])
-            entries.append(en)
-        gen_button = tk.Button(self, font=LARGE_FONT, text='Generate')
-        gen_button.grid(row=6, column=0, columnspan=2)
+# Generates Tree
+def generate_tree():
+    clear_scene()
+    global is_drawing
+    is_drawing = 1
+    iterate_path()
 
-        # turtle canvas
-        canvas = tk.Canvas(self, width=(w-200), height=h)
-        canvas.grid(row=0, column=2, rowspan=100)
-        tree_turtle = turtle.RawTurtle(canvas)
-        tree_turtle.speed(0)
+
+# Clears any generated Trees
+def clear_scene():
+    if is_drawing == 0:
+        tree_turtle.clear()
         tree_turtle.hideturtle()
         tree_turtle.penup()
-        tree_turtle.sety(-(h / 2) + 100)
-        tree_turtle.left(90)
+        tree_turtle.setposition(start_pos)
+        tree_turtle.setheading(start_heading)
         tree_turtle.showturtle()
         tree_turtle.pendown()
-        start_pos = tree_turtle.pos()
-        start_heading = tree_turtle.heading()
 
 
-app = Application()
-app.title('Tree Generator')
-app.state('zoomed')
-app.mainloop()
+# Iterates path string
+def iterate_path():
+    cur_string = 'F'
+    new_string = ""
+    for each in range(int(entries[0].get())):
+        for char in cur_string:
+            if char == "F":
+                new_string += "FF+[+F-F-F]-[-F+F+F]"
+            else:
+                new_string += char
+        cur_string = new_string
+        new_string = ""
+    draw_tree(cur_string)
+
+
+# Draws tree
+def draw_tree(path):
+    saved_pos = []
+    saved_angle = []
+    for each in path:
+        if each == "F":
+            tree_turtle.forward(random.randrange(int(entries[1].get()), int(entries[2].get())))
+        elif each == "+":
+            tree_turtle.left(-random.randrange(int(entries[3].get()), int(entries[4].get())))
+        elif each == "-":
+            tree_turtle.left(random.randrange(int(entries[3].get()), int(entries[4].get())))
+        elif each == "[":
+            saved_pos.append(tree_turtle.pos())
+            saved_angle.append(tree_turtle.heading())
+        elif each == "]":
+            tree_turtle.penup()
+            tree_turtle.setheading(saved_angle[-1])
+            del saved_angle[-1]
+            tree_turtle.setposition(saved_pos[-1])
+            del saved_pos[-1]
+            tree_turtle.pendown()
+    tree_turtle.hideturtle()
+    global is_drawing
+    is_drawing = 0
+
+
+# Setup turtle canvas & place turtle close to bottom of screen
+canvas = Canvas(root, width=(w-200), height=h)
+canvas.grid(row=0, column=2, rowspan=100)
+tree_turtle = turtle.RawTurtle(canvas)
+tree_turtle.speed(-100)
+tree_turtle.hideturtle()
+tree_turtle.penup()
+tree_turtle.sety(-(h/2) + 100)
+tree_turtle.left(90)
+tree_turtle.showturtle()
+tree_turtle.pendown()
+start_pos = tree_turtle.pos()
+start_heading = tree_turtle.heading()
+
+# Setup entry fields and buttons
+
+fields = ['Iterations: ', 'Seg Length Low: ', 'Seg Length High: ', 'Turn Angle Low: ', 'Turn Angle High: ']
+entry_defaults = [3, 8, 16, 10, 22]
+entries = []
+
+for i in range(len(fields)):
+    lab = Label(root, text=fields[i])
+    lab.grid(column=0, row=i)
+    en = Entry(root, width=6)
+    en.grid(column=1, row=i, padx=10)
+    en.insert(END, entry_defaults[i])
+    entries.append(en)
+
+generate = Button(root, font='bold', text='Generate', command=generate_tree)
+generate.grid(column=0, row=6)
+
+
+root.mainloop()
