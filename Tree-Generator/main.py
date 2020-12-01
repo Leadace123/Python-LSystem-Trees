@@ -4,7 +4,7 @@ import random
 
 # Creates Root Window
 root = Tk()
-root.title('drawing GUI')
+root.title('Tree Generator')
 root.state('zoomed')
 root.config(bg='grey')
 w = root.winfo_screenwidth()
@@ -16,22 +16,22 @@ is_drawing = 0
 
 # Generates Tree
 def generate_tree():
-    clear_scene()
     global is_drawing
-    is_drawing = 1
-    iterate_path()
+    if is_drawing == 0:
+        clear_scene()
+        is_drawing = 1
+        iterate_path()
 
 
 # Clears any generated Trees
 def clear_scene():
-    if is_drawing == 0:
-        tree_turtle.clear()
-        tree_turtle.hideturtle()
-        tree_turtle.penup()
-        tree_turtle.setposition(start_pos)
-        tree_turtle.setheading(start_heading)
-        tree_turtle.showturtle()
-        tree_turtle.pendown()
+    tree_turtle.clear()
+    tree_turtle.hideturtle()
+    tree_turtle.penup()
+    tree_turtle.setposition(start_pos)
+    tree_turtle.setheading(start_heading)
+    tree_turtle.showturtle()
+    tree_turtle.pendown()
 
 
 # Iterates path string
@@ -51,6 +51,7 @@ def iterate_path():
 
 # Draws tree
 def draw_tree(path):
+    global is_drawing
     saved_pos = []
     saved_angle = []
     for each in path:
@@ -71,7 +72,6 @@ def draw_tree(path):
             del saved_pos[-1]
             tree_turtle.pendown()
     tree_turtle.hideturtle()
-    global is_drawing
     is_drawing = 0
 
 
@@ -104,7 +104,7 @@ for i in range(len(fields)):
     entries.append(en)
 
 generate = Button(root, font='bold', text='Generate', command=generate_tree)
-generate.grid(column=0, row=6)
+generate.grid(column=0, row=6, columnspan=2)
 
 
 root.mainloop()
