@@ -26,18 +26,35 @@ class Application(tk.Tk):
 class TreeGenerator(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-
+        w = self.winfo_screenwidth()
+        h = self.winfo_screenheight()
+        # Inputs
         fields = ['Iterations: ', 'Seg Length Low: ', 'Seg Length High: ', 'Turn Angle Low: ', 'Turn Angle High: ']
         entry_defaults = [3, 8, 16, 10, 22]
         entries = []
-
         for i in range(len(fields)):
             lab = tk.Label(self, text=fields[i])
-            lab.grid(column=10, row=(i + 5))
+            lab.grid(row=i, column=0)
             en = tk.Entry(self, width=6)
-            en.grid(column=11, row=(i + 5), padx=10)
+            en.grid(row=i, column=1, padx=10)
             en.insert(0, entry_defaults[i])
             entries.append(en)
+        gen_button = tk.Button(self, font=LARGE_FONT, text='Generate')
+        gen_button.grid(row=6, column=0, columnspan=2)
+
+        # turtle canvas
+        canvas = tk.Canvas(self, width=(w-200), height=h)
+        canvas.grid(row=0, column=2, rowspan=100)
+        tree_turtle = turtle.RawTurtle(canvas)
+        tree_turtle.speed(0)
+        tree_turtle.hideturtle()
+        tree_turtle.penup()
+        tree_turtle.sety(-(h / 2) + 100)
+        tree_turtle.left(90)
+        tree_turtle.showturtle()
+        tree_turtle.pendown()
+        start_pos = tree_turtle.pos()
+        start_heading = tree_turtle.heading()
 
 
 app = Application()
